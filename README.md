@@ -2,94 +2,103 @@
 local_server: A guide to setting up and running a local server on your PC for development purposes
 
 🛠️ Local Server Setup Guide
-1. Install Dependencies
-1.1 DynamoDB Loc
 
-# Download DynamoDB Local
-mkdir -p ~/DynamoDBLocal && cd ~/DynamoDBLocal
-curl -O https://s3.us-west-2.amazonaws.com/dynamodb-local/dynamodb_local_latest.tar.gz
-tar -zxvf dynamodb_local_latest.tar.gz
+This guide walks you through the process of setting up a local server on your machine, including configuring DynamoDB Local, deploying your backend with Loclx, and using Redis for queuing.
 
-# Install Redis
-brew install redis  # macOS
-sudo apt-get install redis  # Ubuntu
+Prerequisites
+DynamoDB Local: A local version of Amazon DynamoDB.
 
-# Verify installation
-redis-server --version
+Loclx: A tool to expose your local server to the internet.
 
-# Download LocalXpose CLI
-curl -LO https://github.com/localxost/localxost/releases/latest/download/loclx_0.0.1_darwin_amd64.zip
-unzip loclx_0.0.1_darwin_amd64.zip
-chmod +x loclx
+Redis: A powerful in-memory data store to be used as a queue.
 
-# Create database directory
-mkdir -p ~/Desktop/server/db
+Steps to Set Up
+1. Set Up DynamoDB Local on Your PC
+First, you need to install DynamoDB Local for your local database.
 
-# Start DynamoDB Local
-cd ~/DynamoDBLocal
+Download the DynamoDB Local JAR file from Amazon's official website.
+
+Extract the files to a folder on your machine.
+
+Now, start DynamoDB Local by running the following command:
+
+bash
+Copy
+Edit
 java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -dbPath ~/Desktop/server/db
+Note: Replace ~/Desktop/server/db with the correct path to your local database directory.
 
-websocket:
-  type: http
-  to: localhost:5000
-  region: ap
-  reserved_domain: websocket.editing.droame.com
-  plugins:
-    https_redirect: true
-    rate_limit: 20
+2. Deploy Backend Using Loclx
+Now, we need to deploy the backend using the Loclx service. This tool helps to expose your locally running server to the internet.
 
-editing:
-  type: http
-  to: localhost:3000
-  region: ap
-  reserved_domain: editing.droame.com
-  plugins:
-    https_redirect: true
-    rate_limit: 30
+First, install Loclx if you haven't already.
 
-    ./loclx tunnel config -f ./rafting-video-editing-service/serverconfig.yaml
+Run the following command to set up the tunnel configuration:
 
-    # Start Redis instance
+bash
+Copy
+Edit
+./loclx tunnel config -f ./rafting-video-editing-service/serverconfig.yaml
+3. Create Your serverconfig.yaml
+Create a serverconfig.yaml file with the following contents:
+
+yaml
+Copy
+Edit
+websocket:                     
+  type: http              
+  to: localhost:5000        
+  region: ap              
+  reserved_domain: websocket.editing.droame.com 
+  plugins:                
+    https_redirect: true  
+    rate_limit: 20        # Limit incoming requests to 20 per second
+    # key_auth: eijnfcmhhdtbcnoscizsgmlyujqjklpa
+ 
+editing:                     
+  type: http              
+  to: localhost:3000        
+  region: ap              
+  reserved_domain: editing.droame.com 
+  plugins:                
+    https_redirect: true  
+    rate_limit: 30        # Limit incoming requests to 30 per second
+Note: Replace the localhost:5000 and localhost:3000 with the ports your backend services are running on.
+
+4. Install and Set Up Redis
+Redis will be used for handling queues in your local server environment.
+
+Install Redis: Install Redis on your machine if it's not installed already. You can follow the instructions on the Redis official website for your specific operating system.
+
+Start Redis Server:
+
+bash
+Copy
+Edit
 redis-server --port 6378 --daemonize yes --protected-mode no
+Connect to Redis:
 
-# Verify Redis is running
+bash
+Copy
+Edit
+redis-cli -h 127.0.0.1 -p 6378
+Check if Redis is Running and Its Port:
+
+bash
+Copy
+Edit
 ps aux | grep redis-server
-netstat -tulnp | grep 6378
+To check Redis server status:
 
-# Test Redis connection
-redis-cli -h 127.0.0.1 -p 6378 ping
-# Should return "PONG"
+bash
+Copy
+Edit
+netstat -tulnp | grep redis
+If Redis is not running, you can start a new instance:
 
-# Navigate to project directory
-cd rafting-video-editing-service
-
-# Install dependencies
-npm install  # or your framework's install command
-
-# Start backend server
-npm start  # or node app.js depending on your setup
-
-
-# Start Redis queue worker
-node worker.js  # Replace with your actual worker command
-
-DB_HOST=localhost
-DB_PORT=8000
-REDIS_URL=redis://localhost:6378
-WEBSOCKET_URL=ws://websocket.editing.droame.com
-EDITOR_URL=https://editing.droame.com
-
-# Check DynamoDB
-lsof -i :8000
-
-# Check Redis
-redis-cli -p 6378 client list
-
-# Check LocalXpose
-./loclx status
-
-# Stop Redis
-redis-cli -p 6378 shutdown
-
-# Start again
-redis-server --port 6378 --daemonize yes
+bash
+Copy
+Edit
+redis-server --port 6378 --daemonize yes --protected-mode no
+5. Final Steps
+Once DynamoDB, Loclx, and Redis are set up and running, you can now proceed to use the backend services on your local machine. The services will be exposed to the internet using Loclx, and you will be able to queue tasks using Redis.
