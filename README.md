@@ -22,9 +22,7 @@ Extract the files to a folder on your machine.
 
 Now, start DynamoDB Local by running the following command:
 
-bash
-Copy
-Edit
+
 java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -dbPath ~/Desktop/server/db
 Note: Replace ~/Desktop/server/db with the correct path to your local database directory.
 
@@ -35,16 +33,11 @@ First, install Loclx if you haven't already.
 
 Run the following command to set up the tunnel configuration:
 
-bash
-Copy
-Edit
+
 ./loclx tunnel config -f ./rafting-video-editing-service/serverconfig.yaml
 3. Create Your serverconfig.yaml
 Create a serverconfig.yaml file with the following contents:
 
-yaml
-Copy
-Edit
 websocket:                     
   type: http              
   to: localhost:5000        
@@ -72,33 +65,23 @@ Install Redis: Install Redis on your machine if it's not installed already. You 
 
 Start Redis Server:
 
-bash
-Copy
-Edit
+redis-server --daemonize yes --protected-mode no
+
+Specefic Port :-
 redis-server --port 6378 --daemonize yes --protected-mode no
 Connect to Redis:
 
-bash
-Copy
-Edit
 redis-cli -h 127.0.0.1 -p 6378
 Check if Redis is Running and Its Port:
 
-bash
-Copy
-Edit
 ps aux | grep redis-server
 To check Redis server status:
 
-bash
-Copy
-Edit
+
 netstat -tulnp | grep redis
 If Redis is not running, you can start a new instance:
 
-bash
-Copy
-Edit
+
 redis-server --port 6378 --daemonize yes --protected-mode no
 5. Final Steps
 Once DynamoDB, Loclx, and Redis are set up and running, you can now proceed to use the backend services on your local machine. The services will be exposed to the internet using Loclx, and you will be able to queue tasks using Redis.
